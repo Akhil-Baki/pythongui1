@@ -130,6 +130,10 @@ def summarize():
 
     return render_template('index.html', summary=summary, summary_file=summary_filename, success="PDF successfully summarized and saved.")
 
+if __name__ == '__main__':
+    
+    port = int(os.environ.get('PORT', 10000))  
+    app.run(host='0.0.0.0', port=port)
 
 @app.route('/download/<path:filename>')
 def download_file(filename):
