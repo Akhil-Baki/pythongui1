@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>PDF to Voice Converter</title>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500&display=swap" rel="stylesheet">
+
+  <style>
+    body {
+        font-family: 'Roboto', sans-serif;
+        margin: 0;
+        padding: 0;
+        min-height: 100vh;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        background: #f4f7f6;
+        transition: background 0.3s, color 0.3s;
+    }
+
+    .container {
+        background: #ffffff;
+        padding: 40px;
+        border-radius: 8px;
+        box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+        width: 400px;
+        text-align: center;
+        margin-bottom: 60px; /* Increase spacing between containers */
+    }
+
+    h1 {
+        font-size: 24px;
+        margin-bottom: 20px;
+        color: #333;
+        transition: color 0.3s;
+    }
+
+    .upload-box {
+        background-color: #ececec;
+        padding: 30px;
+        border-radius: 8px;
+        border: 2px dashed #ccc;
+        cursor: pointer;
+        margin-bottom: 20px;
+    }
+
+    .upload-box:hover {
+        background-color: #e0e0e0;
+    }
+
+    .upload-box p {
+        color: #888;
+        font-size: 16px;
+    }
+
+    input[type="file"] {
+        display: none;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    select, button {
+        padding: 12px;
+        border-radius: 5px;
+        border: 1px solid #ddd;
+        font-size: 16px;
+        width: 100%;
+        margin-top: 10px;
+    }
+
+    select {
+        background-color: #f9f9f9;
+    }
+
+    button[type="submit"] {
+        background-color: #4CAF50;
+        color: white;
+        font-weight: bold;
+        border: none;
+        cursor: pointer;
+        transition: background-color 0.3s;
+    }
+
+    button[type="submit"]:hover {
+        background-color: #45a049;
+    }
+
+    .error {
+        display: none !important; /* Ensure the error section is completely hidden */
+    }
+
+    .download-link {
+        margin-top: 20px;
+        display: block;
+        color: #4CAF50;
+        font-weight: bold;
+        text-decoration: none;
+    }
+
+    .download-link:hover {
+        text-decoration: underline;
+    }
+
+    .theme-toggle-icon {
+        position: fixed;
+        top: 15px;
+        right: 15px;
+        font-size: 22px;
+        background: none;
+        border: none;
+        cursor: pointer;
+        outline: none;
+        z-index: 1000;
+        transition: transform 0.3s;
+    }
+
+    .theme-toggle-icon:hover {
+        transform: scale(1.2);
+    }
+
+    /* Dark Theme */
+    .dark-mode {
+        background-color: #1e1e1e;
+        color: #f0f0f0;
+    }
+
+    .dark-mode .container {
+        background-color: #2e2e2e;
+        color: #f0f0f0;
+    }
+
+    .dark-mode h1 {
+        color: #f0f0f0;
+    }
+
+    .dark-mode .upload-box {
+        background-color: #444;
+        border-color: #666;
+    }
+
+    .dark-mode select, .dark-mode button[type="submit"] {
+        background-color: #444;
+        color: #fff;
+        border-color: #666;
+    }
+
+    .dark-mode button[type="submit"]:hover {
+        background-color: #388e3c;
+    }
+
+    /* High Contrast Mode */
+    .contrast-mode {
+        background-color: black;
+        color: yellow;
+    }
+
+    .contrast-mode .container {
+        background-color: black;
+        color: yellow;
+        border: 2px solid yellow;
+    }
+
+    .contrast-mode h1 {
+        color: yellow;
+    }
+
+    .contrast-mode .upload-box {
+        background-color: black;
+        border: 2px dashed yellow;
+        color: yellow;
+    }
+
+    .contrast-mode select, .contrast-mode button[type="submit"] {
+        background-color: black;
+        color: yellow;
+        border: 2px solid yellow;
+    }
+
+    .contrast-mode button[type="submit"]:hover {
+        background-color: yellow;
+        color: black;
+    }
+
+    .contrast-mode .download-link {
+        color: yellow;
+    }
+  </style>
+</head>
+<body>
+
+<!-- Theme toggle icon button in top corner -->
+<button id="theme-toggle" class="theme-toggle-icon" onclick="cycleTheme()" title="Toggle Theme">☀️</button>
+
+<div class="container">
+    <h1>PDF to Voice Converter</h1>
+
+    <form method="POST" enctype="multipart/form-data">
+        <div class="upload-box" onclick="document.getElementById('file-input').click();">
+            <p>Drag & Drop PDF or DOCX file here or Click to Upload</p>
+            <input type="file" name="file" id="file-input" accept=".pdf,.docx" onchange="handleFileChange()">
+        </div>
+
+        <div class="form-group">
+            <label for="mode">Choose TTS Mode:</label>
+            <select name="mode" id="mode">
+                <option value="online">Online (Google TTS)</option>
+                <option value="offline">Offline (pyttsx3)</option>
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="lang">Select Language:</label>
+            <select name="lang" id="lang">
+                <option value="en">English</option>
+                <option value="es">Spanish</option>
+                <option value="fr">French</option>
+                <option value="de">German</option>
+                <option value="it">Italian</option>
+                <option value="pt">Portuguese</option>
+                <option value="hi">Hindi</option>
+            </select>
+        </div>
+
+        <button type="submit">Convert to Speech</button>
+    </form>
+
+    {% if error %}
+        <div class="error">{{ error }}</div>
+    {% endif %}
+
+    {% if download %}
+        <a href="{{ url_for('serve_output_file', filename=download.split('/')[-1]) }}" class="download-link">Play Your Audio</a>
+    {% endif %}
+</div>
+
+<div class="container">
+    <h1>PDF Summarizer</h1>
+
+    <form action="/summarize" method="POST" enctype="multipart/form-data">
+        <div class="upload-box" onclick="document.getElementById('summary-file-input').click();">
+            <p>Drag & Drop PDF file here or Click to Upload</p>
+            <input type="file" name="file" id="summary-file-input" accept=".pdf" onchange="handleSummaryFileChange()">
+        </div>
+
+        <button type="submit">Summarize PDF</button>
+    </form>
+
+    {% if summary %}
+        <div class="summary-box">
+            <h2>Summary:</h2>
+            <p>{{ summary }}</p>
+        </div>
+    {% endif %}
+</div>
+
+<script>
+    function handleFileChange() {
+        let input = document.getElementById('file-input');
+        if (input.files.length > 0) {
+            document.querySelector('.upload-box p').innerText = input.files[0].name;
+        }
+    }
+
+    function handleSummaryFileChange() {
+        let input = document.getElementById('summary-file-input');
+        if (input.files.length > 0) {
+            document.querySelector('.upload-box p').innerText = input.files[0].name;
+        }
+    }
+
+    let themeIndex = 0;
+    const themes = ["light", "dark", "contrast"];
+    const icons = ["☀️", "🌙", "🌓"];
+    const body = document.body;
+    const themeButton = document.getElementById("theme-toggle");
+
+    function cycleTheme() {
+        themeIndex = (themeIndex + 1) % themes.length;
+        body.className = "";
+        if (themes[themeIndex] !== "light") {
+            body.classList.add(`${themes[themeIndex]}-mode`);
+        }
+        themeButton.innerText = icons[(themeIndex + 1) % icons.length];
+    }
+
+</script>
+</body>
+</html>
