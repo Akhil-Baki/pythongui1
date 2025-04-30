@@ -4,3 +4,5 @@ gTTS
 pyttsx3
 python-docx
 gunicorn
+transformers
+torch
