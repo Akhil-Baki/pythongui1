@@ -3,3 +3,4 @@ PyMuPDF
 gTTS
 pyttsx3
 python-docx
+gunicorn
